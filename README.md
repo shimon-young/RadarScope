@@ -1,17 +1,16 @@
-# RADAR: An Expert-Level Generalist AI for Abdominal CT Diagnosis
+# RadarScope
+
+**RADAR 的非官方衍生版本** —— 桌面部署版：服务端封装、中文交互界面、跨平台一键安装、离线运行。
 
 [![Upstream](https://img.shields.io/badge/GitHub-Upstream%20RADAR-B85C38?logo=github&logoColor=white)](https://github.com/alibaba-damo-academy/damo-radar)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-7C3F58?logo=creativecommons&logoColor=white)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![CI](https://img.shields.io/badge/CI-package%20integrity-passing-4c1?logo=githubactions&logoColor=white)](.github/workflows/package-integrity.yml)
+[![CI](https://github.com/shimon-young/RadarScope/actions/workflows/package-integrity.yml/badge.svg)](https://github.com/shimon-young/RadarScope/actions/workflows/package-integrity.yml)
 
-> **本仓库是 RadarScope** —— RADAR 的非官方衍生版本，做工程化改造：
-> 桌面服务端封装、中文交互界面、跨平台一键部署、离线运行。
-> 模型权重不随仓库分发，首次运行会引导下载（约 1.9 GB，走国内镜像）。
+> **本仓库不是 RADAR 官方项目。** 它是 RADAR 的工程化衍生版本，
+> 模型权重与训练代码不属于本仓库。首次运行会引导下载权重（约 1.9 GB，走国内镜像）。
 >
 > **请先读[衍生版本声明与许可边界](#衍生版本声明与许可边界)**：本项目沿用上游
 > CC BY-NC-SA 4.0，**仅限非商业用途**，且必须保留对原 RADAR 项目的署名。
-
-RADAR is a generalist vision-language model trained on over 400,000 contrast-enhanced abdominal CT examinations with 15 million anatomy-aware image–text pairs, learning directly from clinical reports without manual annotation. RADAR provides a scalable and versatile framework for radiology AI, demonstrating expert-level performance across both routine and complex clinical tasks.
 
 <p align="center">
   <img src="docs/radar_fig0.png" alt="RADAR Overview" width="90%">
@@ -23,6 +22,10 @@ RADAR is a generalist vision-language model trained on over 400,000 contrast-enh
 
 RadarScope 是基于 [DAMO Academy RADAR](https://github.com/alibaba-damo-academy/damo-radar)（*Science* 2026）的**非官方衍生版本**，
 在原始项目基础上做了工程化改造（桌面服务端封装、中文交互、离线部署等）。
+
+> **关于上游模型**：RADAR 是训练于逾 40 万例增强腹部 CT、
+> 1500 万条解剖感知图文对的通用视觉-语言模型，可直接从临床报告学习而无需人工标注，
+> 在常规与复杂临床任务上均达到专家级表现。模型权重与训练代码**不属于本仓库**。
 
 - **许可**：沿用原项目的 **CC BY-NC-SA 4.0**——**非商业性使用（NonCommercial）+ 相同方式共享（ShareAlike）**，见 `LICENSE`。本版本同样以该许可发布。
 - **商用**：任何商业性使用（收费部署、对外服务、嵌入商业产品）需另行取得原版权方授权。
