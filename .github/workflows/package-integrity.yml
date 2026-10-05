@@ -130,13 +130,26 @@ jobs:
             exit 1
           fi
 
+      # Scans the two source trees only. RADAR_inference/env/ is a local
+      # virtual environment and is not tracked, so a recursive compileall
+      # would walk third-party code and report warnings from it.
       - name: Verify Python syntax
+        shell: bash
         run: |
-          python -m compileall -q RADAR_inference dynamic_network_architectures 2>/dev/null \
-            || python -m compileall -q RADAR_inference
+          python -m compileall -q \
+            RADAR_inference/radar \
+            RADAR_inference/scripts \
+            RADAR_inference/dynamic_network_architectures \
+            RADAR_inference/service.py \
+            RADAR_inference/inference_demo.py \
+            RADAR_inference/items146.py \
+            RADAR_inference/items_merlin20.py \
+            RADAR_inference/merlin_prompts.py
           echo "Python syntax OK."
 
+      # pack_release.ps1 is the release packager; it requires PowerShell.
       - name: Build release archive
+        if: runner.os == 'Windows'
         shell: pwsh
         run: ./pack_release.ps1
 
