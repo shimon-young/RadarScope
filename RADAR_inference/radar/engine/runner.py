@@ -272,8 +272,8 @@ def run_inference(
         ox, oy, oz = meta_info['orig_origin']
         # 原点回推必须过方向矩阵：crop_min_dhw 是 (z, y, x) 轴的索引偏移，
         # 而 LPS 世界坐标偏移 = direction @ (各轴偏移×各轴间距)。
-        # 之前的实现逐轴直接相加，对 y 方向余弦为 -1 的 LAS 数据（本批数据全部是）
-        # 等于把 y 偏移加反 —— 裁剪偏移 12 的病例掩膜整体错位 24 个体素（AC4240fff）。
+        # 逐轴直接相加会在 y 方向余弦为 -1 的 LAS 数据上把 y 偏移加反，
+        # 导致掩膜整体错位。
         dir_np = np.asarray(meta_info['orig_direction'], dtype=np.float64).reshape(3, 3)
         delta = np.array([min_i * sp_x, min_j * sp_y, min_z * sp_z], dtype=np.float64)
         offset_lps = dir_np @ delta

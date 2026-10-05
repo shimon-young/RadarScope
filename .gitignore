@@ -34,18 +34,9 @@ __pycache__/
 data/demo_cases/
 
 # 7. 打包产物
-#    注意：这里只排除根目录的发布包 dist/（pack_release.ps1 的输出）。
-#    frontend/dist/ 是前端构建产物，**必须提交**：
-#    - 服务端直接挂载它提供页面，缺了服务能起但页面打不开；
-#    - 本项目未保留前端源码（无 package.json / src/），无法重建；
-#    - 体积仅 6.6 MB。
-#    故此处用 /dist/ 锚定根目录，避免误伤 frontend/dist。
+#    锚定根目录：发布包在 dist/，前端构建产物在 frontend/dist/，
+#    后者必须提交——服务端直接挂载它提供页面，且本项目不含前端源码，无法重建。
 /dist/
-
-# ⚠ .gitattributes 与 .gitignore 本身【必须】提交，不可排除。
-#   .gitattributes 未被追踪 = 换行符锁定完全失效：
-#   Windows 用户的 .sh 会被转成 CRLF，Linux 上直接不可用。
-#   任何情况下都不要再往这里加排除这两者的规则。
 
 # 8. 本地会话 / 编辑器数据
 .workbuddy/
