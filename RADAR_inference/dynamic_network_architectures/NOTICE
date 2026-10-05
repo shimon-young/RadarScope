@@ -1,0 +1,36 @@
+dynamic-network-architectures
+Copyright 2021 Division of Medical Image Computing (MIC),
+German Cancer Research Center (DKFZ)
+
+This product includes software developed at the Division of Medical Image
+Computing, German Cancer Research Center (DKFZ), originally published at
+https://github.com/MIC-DKFZ/dynamic-network-architectures
+
+Licensed under the Apache License, Version 2.0 (see the LICENSE file in this
+directory). You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
+
+---
+
+This copy is VENDORED into RadarScope (a derivative of DAMO Academy "RADAR",
+https://github.com/alibaba-damo-academy/damo-radar) and has been MODIFIED
+relative to the upstream release:
+
+  * `vision_branch.py` adapted for the RADAR vision-language model. All local
+    edits are marked inline with `[optN]` / `[mod]` comments, and the file
+    carries an explicit "MODIFIED" notice in its header as required by
+    Apache License 2.0, Section 4(b).
+  * `med.py` is **not** from dynamic-network-architectures. It originates from
+    LAVIS (https://github.com/salesforce/LAVIS) and is
+    **BSD 3-Clause licensed** — see the copyright header inside that file and
+    the "LAVIS" section of ../../THIRD_PARTY_LICENSES.md. It is kept in this
+    directory only because RADAR's import paths reference it from here.
+
+Files under `architectures/`, `building_blocks/` and `initialization/` are
+unmodified upstream Apache-2.0 sources and carry no local changes.
+
+RadarScope itself is distributed under CC BY-NC-SA 4.0 (see the LICENSE file in
+the repository root). This directory remains under its upstream licenses
+(Apache-2.0, and BSD-3-Clause for `med.py`) as required by those licenses;
+those permissive terms are compatible with, and not superseded by, the
+CC BY-NC-SA 4.0 terms that cover the rest of the project.

@@ -1,0 +1,155 @@
+name: Package Integrity
+
+# 校验分发包与仓库的一致性。这类问题本地测不出来：
+# 换行符被 git 转换、frontend/dist 被 .gitignore 误伤、
+# vendored 模块漏拷 —— 只有在别的机器上 clone / 解压才会暴露。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # .sh 必须是 LF，.bat 必须是 CRLF。
+      # 没有 .gitattributes 时，Windows 上的 autocrlf 会把 .sh 转成 CRLF，
+      # 导致 Linux 用户拿到包后 setup_env.sh 直接不可用。
+      - name: Verify line endings
+        shell: bash
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            if grep -qU $'\r' "$f"; then
+              echo "::error file=$f::CRLF found; .sh must be LF"
+              fail=1
+            fi
+          done < <(find . -name '*.sh' -not -path './.git/*')
+          while IFS= read -r f; do
+            if ! grep -qU $'\r' "$f"; then
+              echo "::error file=$f::LF found; .bat must be CRLF"
+              fail=1
+            fi
+          done < <(find . -name '*.bat' -not -path './.git/*')
+          [ "$fail" = 0 ] && echo "All shell/batch line endings correct."
+
+      # frontend/dist 是构建产物且无源码可重建，必须被 git 追踪。
+      # 曾被 .gitignore 的 dist/ 规则误伤，导致服务能启动但页面打不开。
+      - name: Verify frontend is tracked
+        shell: bash
+        run: |
+          fail=0
+          for f in frontend/dist/index.html; do
+            if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
+              echo "tracked: $f"
+            else
+              echo "::error file=$f::NOT tracked by git; a repo-only release would serve no page"
+              fail=1
+            fi
+          done
+          [ "$fail" = 0 ] || exit 1
+
+      # Apache-2.0 / BSD-3 署名义务：LICENSE 与 NOTICE 必须随包
+      - name: Verify attribution files
+        shell: bash
+        run: |
+          fail=0
+          for f in LICENSE THIRD_PARTY_LICENSES.md \
+                   RADAR_inference/dynamic_network_architectures/LICENSE \
+                   RADAR_inference/dynamic_network_architectures/NOTICE; do
+            if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
+              echo "present: $f"
+            else
+              echo "::error file=$f::missing -- attribution requirement"
+              fail=1
+            fi
+          done
+          [ "$fail" = 0 ] || exit 1
+
+      # 三本文本嵌入必须随包：官方权重库不提供，且 radar.pt 无法现算复现
+      - name: Verify required data files
+        shell: bash
+        run: |
+          fail=0
+          for f in ckpt/infer_text_embedding_radar.pt \
+                   ckpt/infer_text_embedding_merlin_en.pt \
+                   ckpt/bert-base-uncased/vocab.txt; do
+            if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
+              echo "present: $f"
+            else
+              echo "::error file=$f::missing -- package would not run"
+              fail=1
+            fi
+          done
+          [ "$fail" = 0 ] || exit 1
+
+      # 敏感内容绝不能进仓库
+      - name: Verify no sensitive content tracked
+        shell: bash
+        run: |
+          fail=0
+          # 患者影像
+          if git ls-files | grep -qiE '\.(nii|nii\.gz|dcm|nrrd|mha)$'; then
+            echo "::error::medical image files are tracked -- this is a hard violation"
+            git ls-files | grep -iE '\.(nii|nii\.gz|dcm|nrrd|mha)$'
+            fail=1
+          fi
+          # 管理员凭据
+          if git ls-files | grep -q 'admin_auth\.json'; then
+            echo "::error::admin_auth.json is tracked"
+            fail=1
+          fi
+          # 虚拟环境与权重
+          if git ls-files | grep -qE '^RADAR_inference/env/'; then
+            echo "::error::virtualenv is tracked"
+            fail=1
+          fi
+          big=$(git ls-files | grep -E '\.(pth|bin)$' || true)
+          if [ -n "$big" ]; then
+            echo "::error::model weight files are tracked:"
+            echo "$big"
+            fail=1
+          fi
+          [ "$fail" = 0 ] && echo "No sensitive content tracked."
+
+      # vendored 模块完整性：漏拷子目录会在运行时变成 ImportError
+      - name: Verify vendored modules complete
+        shell: bash
+        run: |
+          count=$(git ls-files 'RADAR_inference/dynamic_network_architectures/*.py' | wc -l)
+          echo "vendored .py tracked: $count"
+          if [ "$count" -lt 21 ]; then
+            echo "::error::expected at least 21 vendored modules, found $count"
+            exit 1
+          fi
+
+      - name: Verify Python syntax
+        run: |
+          python -m compileall -q RADAR_inference dynamic_network_architectures 2>/dev/null \
+            || python -m compileall -q RADAR_inference
+          echo "Python syntax OK."
+
+      - name: Build release archive
+        shell: pwsh
+        run: ./pack_release.ps1
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RadarScope-${{ matrix.os }}
+          path: dist/RadarScope.zip
+          if-no-files-found: error

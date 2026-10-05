@@ -1,0 +1,58 @@
+# ══ 不随发布包分发的内容 ══
+# 体积巨大或由用户端生成，见 README「获取模型权重」与 deploy/README.md
+
+# 1. Python 虚拟环境（用户运行 setup_env.bat / setup_env.sh 时在本机创建）
+RADAR_inference/env/
+
+# 2. 模型权重（3.2 GB）：从 HuggingFace radar-generalist 或 ModelScope 下载
+ckpt/*.pth
+
+# 3. 中文 BERT 预训练权重（393 MB，main 推理需要）：同上，随权重一起下载
+ckpt/bert-base-chinese/
+
+# 3b. 英文 BERT 词表（231 KB，plus 推理需要）：**随包分发**，故不排除。
+#     plus 走 bert-base-uncased，其 pytorch_model.bin 已包含在 plus 权重内，
+#     但词表/config 需单独一份，官方权重库不提供 → 必须随包（无患者数据）。
+#     注意：仅分发 config/tokenizer/vocab 四个小文件，不含任何 .bin 权重。
+
+# 4. 文本嵌入：随包分发（合计约 440 KB）
+#    - infer_text_embedding_radar.pt：官方文件，但**只存在于官方 GitHub 仓库的 ckpt/**，
+#      HuggingFace 权重库里没有，也无法现算复现 → 必须随包
+#    - infer_text_embedding_merlin.pt：官方原文件，仅作对照，不参与推理
+#    - infer_text_embedding_merlin_en.pt：plus 实际使用的英文配方嵌入
+#    仅研究用途现算的 plus_scratch 版本是本地产物，不随包
+ckpt/infer_text_embedding_plus_scratch.pt
+
+# 5. 运行产物、日志与缓存（含管理员凭据 results/admin_auth.json，切勿外传）
+results/
+RADAR_inference/logs/
+__pycache__/
+*.py[cod]
+
+# 6. demo 病例（94 MB，官方仓库 data/demo_cases 提供，按需自行下载）
+#    ⚠ 这是真实患者影像，任何情况下都不得随包分发
+data/demo_cases/
+
+# 7. 打包产物
+#    注意：这里只排除根目录的发布包 dist/（pack_release.ps1 的输出）。
+#    frontend/dist/ 是前端构建产物，**必须提交**：
+#    - 服务端直接挂载它提供页面，缺了服务能起但页面打不开；
+#    - 本项目未保留前端源码（无 package.json / src/），无法重建；
+#    - 体积仅 6.6 MB。
+#    故此处用 /dist/ 锚定根目录，避免误伤 frontend/dist。
+/dist/
+
+# ⚠ .gitattributes 与 .gitignore 本身【必须】提交，不可排除。
+#   .gitattributes 未被追踪 = 换行符锁定完全失效：
+#   Windows 用户的 .sh 会被转成 CRLF，Linux 上直接不可用。
+#   任何情况下都不要再往这里加排除这两者的规则。
+
+# 8. 本地会话 / 编辑器数据
+.workbuddy/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.orig
+*.rej
+*.bak

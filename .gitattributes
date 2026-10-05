@@ -1,0 +1,32 @@
+# 换行符必须按文件类型锁定，否则跨平台部署会直接失败：
+#   *.sh  在 Linux/macOS 上必须 LF，CRLF 会导致 bash 报 "\r: command not found"
+#   *.bat 在 Windows 上必须 CRLF，LF 会导致 goto/label 解析错位
+# 不加这一段，Windows 用户若设了 core.autocrlf=true，
+# clone 下来的 .sh 会被转成 CRLF，Linux 上 setup_env.sh 直接不可用。
+
+*.sh   text eol=lf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# 源码与文本：交给 git 自行处理，不做强制转换
+*.py   text
+*.md   text
+*.txt  text
+*.json text
+*.yml  text
+*.yaml text
+
+# 二进制：一律禁止任何换行/文本转换，否则文件会损坏
+*.pt   binary
+*.pth  binary
+*.bin  binary
+*.nii  binary
+*.nii.gz binary
+*.png  binary
+*.jpg  binary
+*.gz   binary
+*.zip  binary
+
+# 前端产物由构建工具生成，diff 噪音大且与部署无关
+frontend/dist/  linguist-generated=true
